@@ -1,5 +1,5 @@
-String trajectoryJSON = "paths/NewPath.wpilib.json";
-Trajectory trajectory = new Trajectory();
+String trajectoryJSON = "paths/NewPath.path.wpilib.json";
+Trajectory trajectory;
 
 @Override
 public void robotInit() {

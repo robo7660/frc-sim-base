@@ -13,7 +13,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import frc.robot.subsystems.DriveSubsystem;
@@ -22,6 +25,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -33,6 +39,7 @@ import java.util.List;
 public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  Trajectory trajectory;
 
   // The driver's controller
   XboxController m_driverController =
@@ -69,6 +76,10 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kRightBumper.value)
         .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
+
+    new JoystickButton(m_driverController, Button.kA.value)
+        .onTrue(new InstantCommand(() -> getAutonomousCommand()));
+
   }
 
   public DriveSubsystem getRobotDrive() {
@@ -86,6 +97,10 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+
+    loadTrajectories();
+    System.out.println("Trajectory:" + trajectory);
+
     // Create a voltage constraint to ensure we don't accelerate too fast
     var autoVoltageConstraint =
         new DifferentialDriveVoltageConstraint(
@@ -109,14 +124,14 @@ public class RobotContainer {
     // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory =
         TrajectoryGenerator.generateTrajectory(
-            // Start at (1, 2) facing the +X direction
+             //Start at (1, 2) facing the +X direction
             new Pose2d(1, 2, new Rotation2d(0)),
             // Pass through these two interior waypoints, making an 's' curve path
             List.of(new Translation2d(2, 3), new Translation2d(3, 1)),
             // End 3 meters straight ahead of where we started, facing forward
             new Pose2d(4, 2, new Rotation2d(0)),
             // Pass config
-            config);
+            config); 
 
     RamseteCommand ramseteCommand =
         new RamseteCommand(
@@ -141,5 +156,20 @@ public class RobotContainer {
 
     // Run path following command, then stop at the end.
     return ramseteCommand.andThen(() -> m_robotDrive.tankDriveVolts(0, 0));
+  }
+
+  public void loadTrajectories() {
+    String trajectoryJSON = "paths/ScoringPath.json";
+   
+   try {
+      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+      String x = trajectoryPath.toString();
+      System.out.println(x);
+      System.out.println(trajectoryPath);
+      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+     } catch (IOException ex) {
+      String m = ex.toString();
+      DriverStation.reportError("Unable to open trajectory: " + ex.toString(), false);
+   }
   }
 }
