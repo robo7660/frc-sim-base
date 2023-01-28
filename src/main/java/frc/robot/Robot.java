@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -53,5 +54,18 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     CommandScheduler.getInstance().cancelAll();
     m_robotContainer.zeroAllOutputs();
+  }
+
+  @Override
+  public void testInit(){
+    LiveWindow.setEnabled(false);
+    m_robotContainer.testInit();
+  }
+
+  @Override
+  public void testPeriodic(){
+    LiveWindow.setEnabled(false);
+    m_robotContainer.testPeriodic();
+
   }
 }

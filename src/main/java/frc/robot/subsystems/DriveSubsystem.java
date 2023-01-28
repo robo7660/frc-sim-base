@@ -262,4 +262,8 @@ public class DriveSubsystem extends SubsystemBase {
   public double getHeading() {
     return Math.IEEEremainder(m_gyro.getAngle(), 360) * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
   }
+  public void setDrive(double speed, double rotation){
+    m_drive.arcadeDrive(speed, rotation);
+    m_drive.tankDrive(speed, speed);
+  }
 }
