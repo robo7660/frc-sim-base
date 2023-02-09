@@ -1,0 +1,12 @@
+String trajectoryJSON = "paths/NewPath.path.wpilib.json";
+Trajectory trajectory;
+
+@Override
+public void robotInit() {
+   try {
+      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+   } catch (IOException ex) {
+      DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
+   }
+}
